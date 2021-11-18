@@ -1,2 +1,2 @@
 # DJITelloWaypointAutoPilot
-PENGEMBANGAN PERANGKAT LUNAK PENGENDALI AUTONOMOUS DRONE BERBASIS WAYPOINT
+DJI Tello Drone Indoor Navigation Waypoint-based Autopilot
