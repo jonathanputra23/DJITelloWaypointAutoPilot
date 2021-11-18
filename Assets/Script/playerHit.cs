@@ -11,6 +11,7 @@ public class playerHit : MonoBehaviour
         if (other.gameObject.tag == whatToHit)
         {
             guideHit = true;
+            //percobaan
         }
     }
     void OnTriggerExit(Collider other)
