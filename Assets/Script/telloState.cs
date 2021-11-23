@@ -6,6 +6,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Threading;
 
+
 public class telloState : MonoBehaviour
 {
     public float yaw, pitch, roll; //degrees
@@ -56,6 +57,7 @@ public class telloState : MonoBehaviour
         {
             try
             {
+                DateTime firstTime = DateTime.Now;
                 receiveBytesState = udpState.Receive(ref RemoteIpEndPoint);
                 returnDataState = Encoding.ASCII.GetString(receiveBytesState);
                 char[] delimiter = { ';' };
@@ -81,6 +83,10 @@ public class telloState : MonoBehaviour
                 agx = float.Parse(statePerData[13].Split(delimiter2)[1]);
                 agy = float.Parse(statePerData[14].Split(delimiter2)[1]);
                 agz = float.Parse(statePerData[15].Split(delimiter2)[1]);
+                DateTime lastTime = DateTime.Now;
+                TimeSpan diff = lastTime - firstTime;
+                int timeSince = (int)diff.TotalMilliseconds;
+                //Debug.Log(timeSince);
             }
             catch (SocketException e)
             {

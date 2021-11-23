@@ -18,9 +18,12 @@ public class TelloController : MonoBehaviour
     public bool onForward;
     public bool onLand;
     public bool onEmergency;
+    public bool onDown;
+    public bool onBack;
     private float angle;
     public int angleWhole;
     public bool onRotate;
+    public int prevRot = 0;
 
     void Start()
     {
@@ -41,6 +44,16 @@ public class TelloController : MonoBehaviour
         {
             connection.Send("battery?");
             onBattery = false;
+        }
+        if (onDown)
+        {
+            connection.Send("down 10");
+            onDown = false;
+        }
+        if (onBack)
+        {
+            connection.Send("back " + forwardSet.ToString());
+            onBack = false;
         }
         if (onTakeOff)
         {
@@ -74,7 +87,8 @@ public class TelloController : MonoBehaviour
         }
         if (onRotate)
         {
-            connection.Send("cw " + angleWhole.ToString());
+            connection.Send("cw " + (angleWhole-prevRot).ToString());
+            prevRot = angleWhole;
             onRotate = false;
         }
         rotation = new Vector3(tState.roll, tState.yaw, -tState.pitch);
@@ -95,7 +109,7 @@ public class TelloController : MonoBehaviour
         angleWhole = (int)angle;
         if (angleWhole < 0)
         {
-            System.Math.Abs(angleWhole);
+            //System.Math.Abs(angleWhole);
             angleWhole += 180;
         }
         //Debug.Log("Angle: " + angle);
