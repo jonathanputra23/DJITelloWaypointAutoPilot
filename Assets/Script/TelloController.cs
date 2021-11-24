@@ -24,6 +24,7 @@ public class TelloController : MonoBehaviour
     public int angleWhole;
     public bool onRotate;
     public int prevRot = 0;
+    public bool onCalculatePos;
 
     void Start()
     {
@@ -91,10 +92,22 @@ public class TelloController : MonoBehaviour
             prevRot = angleWhole;
             onRotate = false;
         }
+        if (onCalculatePos)
+        {
+            movePosition();
+        }
         rotation = new Vector3(tState.roll, tState.yaw, -tState.pitch);
         this.transform.eulerAngles = rotation;
     }
 
+    void movePosition()
+    {
+        float tempx = transform.position.x + tState.sx;
+        float tempy = transform.position.y + tState.sy;
+        float tempz = transform.position.z + tState.sz;
+
+        transform.position = new Vector3(tempx, transform.position.y, tempz);
+    }
     void OnDestroy()
     {
         connection.Stop();

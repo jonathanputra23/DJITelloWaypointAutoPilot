@@ -22,6 +22,7 @@ public class telloState : MonoBehaviour
     public string returnData, returnDataState;
     Thread receiveStateThread;
     public bool threadRunning;
+    public float sx = 0, sy = 0, sz = 0;
 
 
     public void Start()
@@ -86,6 +87,7 @@ public class telloState : MonoBehaviour
                 DateTime lastTime = DateTime.Now;
                 TimeSpan diff = lastTime - firstTime;
                 int timeSince = (int)diff.TotalMilliseconds;
+                calculateJarakWithout(timeSince);
                 //Debug.Log(timeSince);
             }
             catch (SocketException e)
@@ -102,6 +104,21 @@ public class telloState : MonoBehaviour
 
     }
 
+    void calculateJarakWithout(int timez)
+    {
+        //s = v*t <- without acceleration
+        sx = vgx / 10 * timez / 1000;//vg < dcm/s, time < ms
+        sy = vgy / 10 * timez / 1000;
+        sz = vgz / 10 * timez / 1000;
+    }
+
+    void calculateJarakWith(int timez)
+    {
+        //s = v0 t + 1/2 a t^2 <- with constant acceleration
+        sx = vgx / 10 * timez / 10 + 1 / 2 * agx * timez / 10 * timez / 10;//vg < dcm/s, time < ms
+        sy = vgy / 10 * timez / 10 + 1 / 2 * agx * timez / 10 * timez / 10; ;
+        sz = vgz / 10 * timez / 10 + 1 / 2 * agx * timez / 10 * timez / 10; ;
+    }
     void startSDK()
     {
         //var server = new UDPServer();

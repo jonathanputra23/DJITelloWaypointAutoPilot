@@ -51,7 +51,7 @@ public class MovePlayerDestination : MonoBehaviour
         nav.SetDestination(tPos.position);
 
         StartCoroutine(DrawPath(nav.path, prefabs));
-        nav.Stop();
+        //nav.Stop();
     }
 
     IEnumerator DrawPath(NavMeshPath path, GameObject prefab)
