@@ -2,30 +2,36 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TelloLib;
+using System.Linq;
+using System;
 
 public class TelloController : MonoBehaviour
 {
     private UdpConnection connection;
+    [HideInInspector]
     public MovePlayerDestination MPD;
+    [HideInInspector]
     public telloState tState;
     private Vector3 rotation;
     public int speedSet=10;
     public int forwardSet = 50;
-    public bool onBattery;
     public bool onSpeed;
     public bool setSpeed;
     public bool onTakeOff;
     public bool onForward;
+    public bool onBack;
+    public bool onLeft;
+    public bool onRight;
     public bool onLand;
     public bool onEmergency;
     public bool onDown;
-    public bool onBack;
     private float angle;
     public int angleWhole;
     public bool onRotate;
     public int prevRot = 0;
     public bool onCalculatePos;
-
+    //public float totX;
+    //public int timeSince;
     void Start()
     {
         string sendIp = "192.168.10.1";
@@ -41,11 +47,6 @@ public class TelloController : MonoBehaviour
     {
         rotateTo();
         foreach (var message in connection.getMessages()) Debug.Log(message);
-        if (onBattery)
-        {
-            connection.Send("battery?");
-            onBattery = false;
-        }
         if (onDown)
         {
             connection.Send("down 10");
@@ -65,6 +66,16 @@ public class TelloController : MonoBehaviour
         {
             connection.Send("forward " + forwardSet.ToString());
             onForward = false;
+        }
+        if (onLeft)
+        {
+            connection.Send("left " + forwardSet.ToString());
+            onLeft = false;
+        }
+        if (onRight)
+        {
+            connection.Send("right " + forwardSet.ToString());
+            onRight = false;
         }
         if (onLand)
         {
@@ -103,10 +114,10 @@ public class TelloController : MonoBehaviour
     void movePosition()
     {
         float tempx = transform.position.x + tState.sx;
-        float tempy = transform.position.y + tState.sy;
-        float tempz = transform.position.z + tState.sz;
+        float tempy = transform.position.z + tState.sy;
+        float tempz = transform.position.y + tState.sz;
 
-        transform.position = new Vector3(tempx, transform.position.y, tempz);
+        transform.position = new Vector3(tempx, 0, tempy);
     }
     void OnDestroy()
     {

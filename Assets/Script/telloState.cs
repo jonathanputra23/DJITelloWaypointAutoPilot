@@ -5,25 +5,31 @@ using System.Net.Sockets;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Threading;
-
+using System.Linq;
 
 public class telloState : MonoBehaviour
 {
     public float yaw, pitch, roll; //degrees
     public float vgx, vgy, vgz; //decimeter/s
-    public float templ, temph;
-    public float tof, h, bat, baro, time; //barometer value (m) 
+    private float templ, temph;
+    public float bat;
+    private float tof, h, baro, time; //barometer value (m) 
     public float agx, agy, agz; //(0.001g)
     private UdpClient udpClient, udpState;
     private IPEndPoint RemoteIpEndPoint;
     public static List<string> statePerData = new List<string>();
     public static List<string> singleStatePerData = new List<string>();
-    public Byte[] sendBytes, receiveBytes, receiveBytesState;
-    public string returnData, returnDataState;
+    private Byte[] sendBytes, receiveBytes, receiveBytesState;
+    private string returnData, returnDataState;
     Thread receiveStateThread;
     public bool threadRunning;
     public float sx = 0, sy = 0, sz = 0;
+    public float sx2 = 0, sy2 = 0, sz2 = 0;
 
+    public float totalX = 0, totalY = 0, totalZ = 0;
+
+    public float totalXfromList;
+    private List<float> listOfCalculation = new List<float>();
 
     public void Start()
     {
@@ -37,6 +43,7 @@ public class telloState : MonoBehaviour
 
     void Update()
     {
+        totalXfromList = listOfCalculation.Sum();
         //updateState();
         //if(returnData == "ok")
         //{
@@ -87,7 +94,14 @@ public class telloState : MonoBehaviour
                 DateTime lastTime = DateTime.Now;
                 TimeSpan diff = lastTime - firstTime;
                 int timeSince = (int)diff.TotalMilliseconds;
-                calculateJarakWithout(timeSince);
+                //calculateJarakWithout(timeSince);
+                sx = vgx / 10 * timeSince / 1000;//vg < dcm/s, time < ms
+                sy = vgy / 10 * timeSince / 1000;
+                sz = vgz / 10 * timeSince / 1000;
+                sx2 = vgx / 10 * timeSince / 1000 + 1 / 2 * agx / 1000 * 98 / 10 * (timeSince / 1000) * (timeSince / 1000);//vg < dcm/s, time < ms
+                sy2 = vgy / 10 * timeSince / 1000 + 1 / 2 * agy / 1000 * 98 / 10 * (timeSince / 1000) * (timeSince / 1000);
+                sz2 = vgz / 10 * timeSince / 1000 + 1 / 2 * agz / 1000 * 98 / 10 * (timeSince / 1000) * (timeSince / 1000);
+                //calculateJarakWith(timeSince);
                 //Debug.Log(timeSince);
             }
             catch (SocketException e)
@@ -110,14 +124,25 @@ public class telloState : MonoBehaviour
         sx = vgx / 10 * timez / 1000;//vg < dcm/s, time < ms
         sy = vgy / 10 * timez / 1000;
         sz = vgz / 10 * timez / 1000;
+        sx2 = vgx / 10 * timez / 1000 + 1 / 2 * agx / 1000 * 98 / 10 * (timez / 1000) * (timez / 1000);//vg < dcm/s, time < ms
+        sy2 = vgy / 10 * timez / 1000 + 1 / 2 * agy / 1000 * 98 / 10 * (timez / 1000) * (timez / 1000);
+        sz2 = vgz / 10 * timez / 1000 + 1 / 2 * agz / 1000 * 98 / 10 * (timez / 1000) * (timez / 1000);
+        //listOfCalculation.Add(sx);
+        //totalX += sx;
+        //totalY += sy;
+        //totalZ += sz;
     }
 
     void calculateJarakWith(int timez)
     {
-        //s = v0 t + 1/2 a t^2 <- with constant acceleration
-        sx = vgx / 10 * timez / 10 + 1 / 2 * agx * timez / 10 * timez / 10;//vg < dcm/s, time < ms
-        sy = vgy / 10 * timez / 10 + 1 / 2 * agx * timez / 10 * timez / 10; ;
-        sz = vgz / 10 * timez / 10 + 1 / 2 * agx * timez / 10 * timez / 10; ;
+        //s = v0 t + 1/2 a t^2 <- with constant acceleration, a 0.001g = 0.00980665m/s / 0.01m/s, 1g = 9.80665
+        sx2 = vgx / 10 * timez / 1000 + 1 / 2 * agx / 1000 * 98 / 10 * (timez / 1000) * (timez / 1000);//vg < dcm/s, time < ms
+        sy2 = vgy / 10 * timez / 1000 + 1 / 2 * agy / 1000 * 98 / 10 * (timez / 1000) * (timez / 1000); 
+        sz2 = vgz / 10 * timez / 1000 + 1 / 2 * agz / 1000 * 98 / 10 * (timez / 1000) * (timez / 1000);
+        //listOfCalculation.Add(sx);
+        //totalX += sx;
+        //totalY += sy;
+        //totalZ += sz;
     }
     void startSDK()
     {
