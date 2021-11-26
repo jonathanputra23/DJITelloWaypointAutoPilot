@@ -124,9 +124,9 @@ public class telloState : MonoBehaviour
         sx = vgx / 10 * timez / 1000;//vg < dcm/s, time < ms
         sy = vgy / 10 * timez / 1000;
         sz = vgz / 10 * timez / 1000;
-        sx2 = vgx / 10 * timez / 1000 + 1 / 2 * agx / 1000 * 98 / 10 * (timez / 1000) * (timez / 1000);//vg < dcm/s, time < ms
-        sy2 = vgy / 10 * timez / 1000 + 1 / 2 * agy / 1000 * 98 / 10 * (timez / 1000) * (timez / 1000);
-        sz2 = vgz / 10 * timez / 1000 + 1 / 2 * agz / 1000 * 98 / 10 * (timez / 1000) * (timez / 1000);
+        //sx2 = vgx / 10 * timez / 1000 + 1 / 2 * agx / 1000 * 98 / 10 * (timez / 1000) * (timez / 1000);//vg < dcm/s, time < ms
+        //sy2 = vgy / 10 * timez / 1000 + 1 / 2 * agy / 1000 * 98 / 10 * (timez / 1000) * (timez / 1000);
+        //sz2 = vgz / 10 * timez / 1000 + 1 / 2 * agz / 1000 * 98 / 10 * (timez / 1000) * (timez / 1000);
         //listOfCalculation.Add(sx);
         //totalX += sx;
         //totalY += sy;

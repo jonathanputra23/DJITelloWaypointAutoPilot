@@ -15,12 +15,9 @@ public class MovePlayerDestination : MonoBehaviour
 
 
     public ObjectData data = new ObjectData();
-    public List<GameObject> targetLoc;
 
     public GameObject playerPrefabs;
 
-
-    public int count = 0;
 
 
     void Start()
@@ -51,7 +48,7 @@ public class MovePlayerDestination : MonoBehaviour
         nav.SetDestination(tPos.position);
 
         StartCoroutine(DrawPath(nav.path, prefabs));
-        //nav.Stop();
+        nav.Stop();
     }
 
     IEnumerator DrawPath(NavMeshPath path, GameObject prefab)
@@ -72,25 +69,32 @@ public class MovePlayerDestination : MonoBehaviour
 
             Vector3 middle = Vector3.Lerp(previousCorner, currentCorner, i);
             GameObject go = Instantiate(prefab, middle, Quaternion.identity) as GameObject;
-
+            //Debug.Log(middle);
+            getStep(middle);
             go.transform.LookAt(previousCorner);
             previousCorner = currentCorner;
         }
+        //for(int i = 0; i < data.objects.Count; i++)
+        //{
+        //Debug.Log(data.objects[i]);
+
+        //}
         DrawPathLine();
-        getStep();
+        //getStep();
         //StartCoroutine(waitFor());
     }
 
-    public void getStep()
+    public void getStep(Vector3 stepData)
     {
-        GameObject[] stepPoint = GameObject.FindGameObjectsWithTag("step");
-        foreach (GameObject point in stepPoint)
-        {
-            Transform pointTransform = point.transform;
-            Vector3 pos = pointTransform.position;
-            StepLocData SLD = new StepLocData(pos.x, pos.y, pos.z);
-            data.objects.Add(SLD);
-        }
+        data.objects.Add(stepData);
+        //GameObject[] stepPoint = GameObject.FindGameObjectsWithTag("step");
+        //foreach (GameObject point in stepPoint)
+        //{
+        //    Transform pointTransform = point.transform;
+        //    Vector3 pos = pointTransform.position;
+        //    StepLocData SLD = new StepLocData(pos.x, pos.y, pos.z);
+        //    data.objects.Add(SLD);
+        //}
     }
 
     void DrawPathLine()
@@ -112,25 +116,13 @@ public class MovePlayerDestination : MonoBehaviour
 
     public class ObjectData
     {
-        public List<StepLocData> objects;
+        public List<Vector3> objects;
         public ObjectData()
         {
-            this.objects = new List<StepLocData>();
+            this.objects = new List<Vector3>();
         }
     }
 
-    public class StepLocData
-    {
-        public float posX;
-        public float posY;
-        public float posZ;
-        public StepLocData(float px, float py, float pz)
-        {
-            this.posX = px;
-            this.posY = py;
-            this.posZ = pz;
-        }
-    }
 
     public void destroyAll()
     {

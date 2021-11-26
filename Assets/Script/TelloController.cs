@@ -25,6 +25,7 @@ public class TelloController : MonoBehaviour
     public bool onLand;
     public bool onEmergency;
     public bool onDown;
+    public bool onStop;
     private float angle;
     public int angleWhole;
     public bool onRotate;
@@ -99,9 +100,14 @@ public class TelloController : MonoBehaviour
         }
         if (onRotate)
         {
-            connection.Send("cw " + (angleWhole-prevRot).ToString());
+            connection.Send("cw " + (angleWhole).ToString());
             prevRot = angleWhole;
             onRotate = false;
+        }
+        if (onStop)
+        {
+            connection.Send("stop");
+            onStop = false;
         }
         if (onCalculatePos)
         {
@@ -113,11 +119,22 @@ public class TelloController : MonoBehaviour
 
     void movePosition()
     {
-        float tempx = transform.position.x + tState.sx;
-        float tempy = transform.position.z + tState.sy;
-        float tempz = transform.position.y + tState.sz;
+        float tempx = transform.position.x + tState.sx2;
+        float tempy = transform.position.z + tState.sy2;
+        float tempz = transform.position.y + tState.sz2;
+        Vector3 tempV = new Vector3(tempx, tempy, tempz);
+        //Vector3 tempx = transform.forward * tState.sx * Time.deltaTime;
+        //Vector3 tempy = transform.up * tState.sy * Time.deltaTime;
+        //Vector3 tempz = transform.right * tState.sz * Time.deltaTime;
+        //transform.Translate(Vector3.forward * tState.sx , Space.World);
+        transform.position += this.transform.forward * tState.sz2;
+        //transform.position += this.transform.right * tState.sz;
+        //transform.position = new Vector3(tempx, tempy, tempz);
+        //transform.Translate(tState.sx, tState.sy, tState.sz, Space.World);
+        //transform.position = transform.TransformDirection(tempV);
+        //transform.position = transform.TransformPoint(tempV);
 
-        transform.position = new Vector3(tempx, 0, tempy);
+
     }
     void OnDestroy()
     {
@@ -128,14 +145,15 @@ public class TelloController : MonoBehaviour
     {
         Vector3 direction = MPD.playerGoal.position - this.transform.position;
         Debug.DrawRay(this.transform.position, direction, Color.green);
-
-        angle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg - 90;
+        angle = Vector3.Angle(direction, transform.forward);
         angleWhole = (int)angle;
-        if (angleWhole < 0)
-        {
-            //System.Math.Abs(angleWhole);
-            angleWhole += 180;
-        }
+        //angle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg - 90;
+        //angleWhole = (int)angle;
+        //if (angleWhole < 0)
+        //{
+        //    System.Math.Abs(angleWhole);
+        //    angleWhole += 180;
+        //}
         //Debug.Log("Angle: " + angle);
 
         //Quaternion angleAxis = Quaternion.AngleAxis(angle, Vector3.up);
