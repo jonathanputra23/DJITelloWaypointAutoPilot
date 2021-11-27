@@ -95,12 +95,16 @@ public class telloState : MonoBehaviour
                 TimeSpan diff = lastTime - firstTime;
                 int timeSince = (int)diff.TotalMilliseconds;
                 //calculateJarakWithout(timeSince);
-                sx = vgx / 10 * timeSince / 1000;//vg < dcm/s, time < ms
-                sy = vgy / 10 * timeSince / 1000;
-                sz = vgz / 10 * timeSince / 1000;
-                sx2 = vgx / 10 * timeSince / 1000 + 1 / 2 * agx / 1000 * 98 / 10 * (timeSince / 1000) * (timeSince / 1000);//vg < dcm/s, time < ms
-                sy2 = vgy / 10 * timeSince / 1000 + 1 / 2 * agy / 1000 * 98 / 10 * (timeSince / 1000) * (timeSince / 1000);
-                sz2 = vgz / 10 * timeSince / 1000 + 1 / 2 * agz / 1000 * 98 / 10 * (timeSince / 1000) * (timeSince / 1000);
+                //sx = vgx / 10 * timeSince / 1000;//vg < dcm/s, time < ms
+                //sy = vgy / 10 * timeSince / 1000;
+                //sz = vgz / 10 * timeSince / 1000;
+                sx2 = vgx / 10 * timeSince / 1000 + (1 / 2) * ((agx / 1000) * (98 / 10)) * ((timeSince / 1000) * (timeSince / 1000));//vg < dcm/s, time < ms
+                sy2 = vgy / 10 * timeSince / 1000 + (1 / 2) * ((agy / 1000) * (98 / 10)) * ((timeSince / 1000) * (timeSince / 1000));
+                sz2 = vgz / 10 * timeSince / 1000 + (1 / 2) * ((agz / 1000) * (98 / 10)) * ((timeSince / 1000) * (timeSince / 1000));
+                totalX += sx2;
+                totalY += sy2;
+                totalZ += sz2;
+                listOfCalculation.Add(sx2);
                 //calculateJarakWith(timeSince);
                 //Debug.Log(timeSince);
             }

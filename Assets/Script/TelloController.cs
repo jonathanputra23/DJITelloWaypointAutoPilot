@@ -25,12 +25,14 @@ public class TelloController : MonoBehaviour
     public bool onLand;
     public bool onEmergency;
     public bool onDown;
-    public bool onStop;
     private float angle;
     public int angleWhole;
     public bool onRotate;
     public int prevRot = 0;
     public bool onCalculatePos;
+
+    private bool right=false;
+    private float localRotY;
     //public float totX;
     //public int timeSince;
     void Start()
@@ -42,6 +44,8 @@ public class TelloController : MonoBehaviour
         connection = new UdpConnection();
         connection.StartConnection(sendIp, sendPort, receivePort);
         connection.Send("command");
+        StartCoroutine(instantiateRotation());
+
     }
 
     void Update()
@@ -100,34 +104,45 @@ public class TelloController : MonoBehaviour
         }
         if (onRotate)
         {
-            connection.Send("cw " + (angleWhole).ToString());
+            if (right)
+            {
+                connection.Send("cw " + (angleWhole).ToString());
+            }
+            else
+            {
+                connection.Send("ccw " + (angleWhole).ToString());
+            }
             prevRot = angleWhole;
             onRotate = false;
-        }
-        if (onStop)
-        {
-            connection.Send("stop");
-            onStop = false;
         }
         if (onCalculatePos)
         {
             movePosition();
         }
-        rotation = new Vector3(tState.roll, tState.yaw, -tState.pitch);
+        rotation = new Vector3(tState.roll, tState.yaw-localRotY, -tState.pitch);
         this.transform.eulerAngles = rotation;
     }
 
+    IEnumerator instantiateRotation()
+    {
+        yield return new WaitForSeconds(1);
+        localRotY = tState.yaw;
+        Debug.Log(localRotY);
+        Debug.Log(tState.yaw - localRotY);
+    }
     void movePosition()
     {
-        float tempx = transform.position.x + tState.sx2;
-        float tempy = transform.position.z + tState.sy2;
+        float tempx = transform.position.z + tState.sx2;
+        float tempy = transform.position.x + tState.sy2;
         float tempz = transform.position.y + tState.sz2;
-        Vector3 tempV = new Vector3(tempx, tempy, tempz);
+        //Vector3 waypointDir = wayPointTrans.position - transform.position;
+        //Vector3 tempV = new Vector3(tempx, tempy, tempz);
         //Vector3 tempx = transform.forward * tState.sx * Time.deltaTime;
         //Vector3 tempy = transform.up * tState.sy * Time.deltaTime;
         //Vector3 tempz = transform.right * tState.sz * Time.deltaTime;
-        //transform.Translate(Vector3.forward * tState.sx , Space.World);
-        transform.position += this.transform.forward * tState.sz2;
+        //transform.Translate(this.transform.forward * tState.sx , Space.World);
+        //transform.position += transform.forward * (tState.sx2) ;
+        transform.position = new Vector3(tempy, 0, tempx);
         //transform.position += this.transform.right * tState.sz;
         //transform.position = new Vector3(tempx, tempy, tempz);
         //transform.Translate(tState.sx, tState.sy, tState.sz, Space.World);
@@ -147,6 +162,21 @@ public class TelloController : MonoBehaviour
         Debug.DrawRay(this.transform.position, direction, Color.green);
         angle = Vector3.Angle(direction, transform.forward);
         angleWhole = (int)angle;
+        Vector3 perp = Vector3.Cross(transform.forward, direction);
+        float dir = Vector3.Dot(perp, transform.up);
+        if (dir > 0f)
+        {
+            right = true;
+        }
+        else if (dir < 0f)
+        {
+            right = false;
+        }
+        else
+        {
+            right = true;
+        }
+        
         //angle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg - 90;
         //angleWhole = (int)angle;
         //if (angleWhole < 0)
