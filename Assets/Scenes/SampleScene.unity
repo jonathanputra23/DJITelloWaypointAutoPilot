@@ -106,7 +106,7 @@ NavMeshSettings:
   m_BuildSettings:
     serializedVersion: 2
     agentTypeID: 0
-    agentRadius: 1.3
+    agentRadius: 1.5
     agentHeight: 1
     agentSlope: 9
     agentClimb: 0.1
@@ -114,7 +114,7 @@ NavMeshSettings:
     maxJumpAcrossDistance: 0
     minRegionArea: 2
     manualCellSize: 0
-    cellSize: 0.4333333
+    cellSize: 0.5
     manualTileSize: 0
     tileSize: 256
     accuratePlacement: 0
@@ -141,7 +141,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 4294967295
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &155603016
 Transform:
   m_ObjectHideFlags: 0
@@ -331,7 +331,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 4294967295
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &244202764
 Transform:
   m_ObjectHideFlags: 0
@@ -502,7 +502,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 266756191}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.24, y: 0, z: -0.75}
+  m_LocalPosition: {x: 7, y: 0, z: 4.29}
   m_LocalScale: {x: 0.5, y: 0.1, z: 0.5}
   m_Children: []
   m_Father: {fileID: 0}
@@ -696,7 +696,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 4294967295
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &319168867
 Transform:
   m_ObjectHideFlags: 0
@@ -924,7 +924,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 4294967295
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &616915302
 Transform:
   m_ObjectHideFlags: 0
@@ -1290,7 +1290,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 4294967295
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &981602612
 Transform:
   m_ObjectHideFlags: 0
@@ -1385,7 +1385,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 4294967295
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1080513171
 Transform:
   m_ObjectHideFlags: 0
@@ -1517,6 +1517,9 @@ MonoBehaviour:
   onRotate: 0
   prevRot: 0
   onCalculatePos: 0
+  commandSent: 0
+  responseRec: 0
+  onAuto: 0
 --- !u!135 &1091834586
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -1587,7 +1590,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1091834584}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.26, y: 0, z: -10.47}
+  m_LocalPosition: {x: 10.49, y: 0, z: -10.05}
   m_LocalScale: {x: 0.3, y: 0.1, z: 0.3}
   m_Children:
   - {fileID: 1942708018}
@@ -1603,7 +1606,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1091834584}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e750ec31da471a342b15d194e80c271c, type: 3}
   m_Name: 
@@ -1618,7 +1621,7 @@ NavMeshAgent:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1091834584}
-  m_Enabled: 0
+  m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 2
   m_Speed: 1
@@ -1754,16 +1757,12 @@ MonoBehaviour:
   agy: 0
   agz: 0
   threadRunning: 0
-  sx: 0
-  sy: 0
-  sz: 0
   sx2: 0
   sy2: 0
   sz2: 0
   totalX: 0
   totalY: 0
   totalZ: 0
-  totalXfromList: 0
 --- !u!114 &1091834595
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1932,7 +1931,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 4294967295
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1359959686
 Transform:
   m_ObjectHideFlags: 0

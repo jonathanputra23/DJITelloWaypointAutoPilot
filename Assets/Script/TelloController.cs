@@ -31,6 +31,11 @@ public class TelloController : MonoBehaviour
     public int prevRot = 0;
     public bool onCalculatePos;
 
+
+    public int commandSent = 0;
+    public int responseRec = -1; //termasuk send command pertama
+
+    public bool onAuto=false;
     private bool right=false;
     private float localRotY;
     //public float totX;
@@ -44,62 +49,78 @@ public class TelloController : MonoBehaviour
         connection = new UdpConnection();
         connection.StartConnection(sendIp, sendPort, receivePort);
         connection.Send("command");
+        commandSent += 1;
         StartCoroutine(instantiateRotation());
 
     }
 
     void Update()
     {
-        rotateTo();
-        foreach (var message in connection.getMessages()) Debug.Log(message);
+        //rotateTo();
+        foreach (var message in connection.getMessages()) responseRec += 1;
+        if (onAuto)
+        {
+            StartCoroutine(startAuto());
+            onAuto = false;
+        }
         if (onDown)
         {
             connection.Send("down 10");
+            commandSent += 1;
             onDown = false;
         }
         if (onBack)
         {
             connection.Send("back " + forwardSet.ToString());
+            commandSent += 1;
             onBack = false;
         }
         if (onTakeOff)
         {
             connection.Send("takeoff");
+            commandSent += 1;
             onTakeOff = false;
         }
         if (onForward)
         {
             connection.Send("forward " + forwardSet.ToString());
+            commandSent += 1;
             onForward = false;
         }
         if (onLeft)
         {
             connection.Send("left " + forwardSet.ToString());
+            commandSent += 1;
             onLeft = false;
         }
         if (onRight)
         {
             connection.Send("right " + forwardSet.ToString());
+            commandSent += 1;
             onRight = false;
         }
         if (onLand)
         {
             connection.Send("land");
+            commandSent += 1;
             onLand = false;
         }
         if (onEmergency)
         {
             connection.Send("emergency");
+            commandSent += 1;
             onEmergency = false;
         }
         if (onSpeed)
         {
             connection.Send("speed?");
+            commandSent += 1;
             onSpeed = false;
         }
         if (setSpeed)
         {
             connection.Send("speed " + speedSet.ToString());
+            commandSent += 1;
             setSpeed = false;
         }
         if (onRotate)
@@ -107,10 +128,12 @@ public class TelloController : MonoBehaviour
             if (right)
             {
                 connection.Send("cw " + (angleWhole).ToString());
+                commandSent += 1;
             }
             else
             {
                 connection.Send("ccw " + (angleWhole).ToString());
+                commandSent += 1;
             }
             prevRot = angleWhole;
             onRotate = false;
@@ -127,8 +150,8 @@ public class TelloController : MonoBehaviour
     {
         yield return new WaitForSeconds(1);
         localRotY = tState.yaw;
-        Debug.Log(localRotY);
-        Debug.Log(tState.yaw - localRotY);
+        //Debug.Log(localRotY);
+        //Debug.Log(tState.yaw - localRotY);
     }
     void movePosition()
     {
@@ -156,9 +179,9 @@ public class TelloController : MonoBehaviour
         connection.Stop();
     }
 
-    void rotateTo()
+    void rotateTo(Vector3 pos)
     {
-        Vector3 direction = MPD.playerGoal.position - this.transform.position;
+        Vector3 direction = pos - this.transform.position;
         Debug.DrawRay(this.transform.position, direction, Color.green);
         angle = Vector3.Angle(direction, transform.forward);
         angleWhole = (int)angle;
@@ -188,5 +211,34 @@ public class TelloController : MonoBehaviour
 
         //Quaternion angleAxis = Quaternion.AngleAxis(angle, Vector3.up);
         //transform.rotation = Quaternion.Slerp(transform.rotation, angleAxis, Time.deltaTime * 50);
+    }
+
+    IEnumerator startAuto()
+    {
+        yield return new WaitForSeconds(1);
+        setSpeed = true;
+        yield return new WaitForSeconds(1);
+        Debug.Log("Set Speed " + speedSet.ToString());
+        onTakeOff = true;
+        yield return new WaitForSeconds(1);
+        yield return new WaitUntil(() => responseRec == commandSent);
+        Debug.Log("TakeOff Finish");
+        onCalculatePos = true;
+        for (int i = 0; i < MPD.data.objects.Count(); i++)
+        {
+            rotateTo(MPD.data.objects[i]);
+            onRotate = true;
+            yield return new WaitForSeconds(1);
+            //Debug.Log(responseRec.ToString() + ",command sent: " + commandSent.ToString());
+            yield return new WaitUntil(() => responseRec == commandSent);
+            Debug.Log("Rotate " + angleWhole.ToString()+" Finish");
+            forwardSet = ((int)Vector3.Distance(MPD.data.objects[i], this.transform.position)) * 10; 
+            onForward = true;
+            yield return new WaitForSeconds(1);
+            yield return new WaitUntil(() => responseRec == commandSent);
+            Debug.Log("Forward " + forwardSet.ToString() + " Finish");
+
+        }
+        Debug.Log("Finish Navigating");
     }
 }

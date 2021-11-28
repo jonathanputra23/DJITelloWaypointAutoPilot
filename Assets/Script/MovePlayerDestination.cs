@@ -49,6 +49,7 @@ public class MovePlayerDestination : MonoBehaviour
 
         StartCoroutine(DrawPath(nav.path, prefabs));
         nav.Stop();
+        //nav.enabled = false;
     }
 
     IEnumerator DrawPath(NavMeshPath path, GameObject prefab)
@@ -60,7 +61,7 @@ public class MovePlayerDestination : MonoBehaviour
         line.SetVertexCount(path.corners.Length);
 
         Vector3 previousCorner = path.corners[0];
-        for (int i = 0; i < count; i++)
+        for (int i = 1; i < count; i++)
         {
             Vector3 currentCorner = path.corners[i];
             //line.SetPosition(i, path.corners[i]);
@@ -80,6 +81,7 @@ public class MovePlayerDestination : MonoBehaviour
 
         //}
         DrawPathLine();
+        agent.enabled = false;
         //getStep();
         //StartCoroutine(waitFor());
     }

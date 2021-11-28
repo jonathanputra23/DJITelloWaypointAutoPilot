@@ -22,14 +22,15 @@ public class telloState : MonoBehaviour
     private Byte[] sendBytes, receiveBytes, receiveBytesState;
     private string returnData, returnDataState;
     Thread receiveStateThread;
+    [HideInInspector]
     public bool threadRunning;
-    public float sx = 0, sy = 0, sz = 0;
+    private float sx = 0, sy = 0, sz = 0;
     public float sx2 = 0, sy2 = 0, sz2 = 0;
 
     public float totalX = 0, totalY = 0, totalZ = 0;
 
-    public float totalXfromList;
-    private List<float> listOfCalculation = new List<float>();
+    //public float totalXfromList;
+    //private List<float> listOfCalculation = new List<float>();
 
     public void Start()
     {
@@ -43,7 +44,7 @@ public class telloState : MonoBehaviour
 
     void Update()
     {
-        totalXfromList = listOfCalculation.Sum();
+        //totalXfromList = listOfCalculation.Sum();
         //updateState();
         //if(returnData == "ok")
         //{
@@ -61,11 +62,11 @@ public class telloState : MonoBehaviour
     {
         udpState = new UdpClient(8890);
         RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 8890);
+        DateTime firstTime = DateTime.Now;
         while (threadRunning)
         {
             try
             {
-                DateTime firstTime = DateTime.Now;
                 receiveBytesState = udpState.Receive(ref RemoteIpEndPoint);
                 returnDataState = Encoding.ASCII.GetString(receiveBytesState);
                 char[] delimiter = { ';' };
@@ -104,7 +105,8 @@ public class telloState : MonoBehaviour
                 totalX += sx2;
                 totalY += sy2;
                 totalZ += sz2;
-                listOfCalculation.Add(sx2);
+                firstTime = lastTime;
+                //listOfCalculation.Add(sx2);
                 //calculateJarakWith(timeSince);
                 //Debug.Log(timeSince);
             }
