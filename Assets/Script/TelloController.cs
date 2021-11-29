@@ -179,8 +179,8 @@ public class TelloController : MonoBehaviour
         //clockwise
         //y' = y*cos(a) - x*sin(a)
         //x' = y*sin(a) + x*cos(a)
-        double newY = tState.sy2 * Math.Cos(a) + tState.sx2 * Math.Sin(a);
-        double newX = tState.sx2 * Math.Cos(a) - tState.sy2 * Math.Sin(a);
+        double newY = tState.sy2 * Math.Cos(a) - tState.sx2 * Math.Sin(a);
+        double newX = tState.sx2 * Math.Cos(a) + tState.sy2 * Math.Sin(a);
         transform.position = new Vector3(transform.position.x - (float)newY, 0, transform.position.z - (float)newX);
         //if (Math.Abs(rotation.y)>0) //< 25 || Math.Abs(rotation.y)> 65)
         //{
