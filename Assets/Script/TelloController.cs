@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using TelloLib;
 using System.Linq;
 using System;
 
@@ -56,7 +55,7 @@ public class TelloController : MonoBehaviour
 
     void Update()
     {
-        //rotateTo();
+        rotateTo(MPD.guide.transform.position);
         foreach (var message in connection.getMessages()) responseRec += 1;
         if (onAuto)
         {
@@ -101,6 +100,7 @@ public class TelloController : MonoBehaviour
         }
         if (onLand)
         {
+            onCalculatePos = false; 
             connection.Send("land");
             commandSent += 1;
             onLand = false;
@@ -158,6 +158,53 @@ public class TelloController : MonoBehaviour
         float tempx = transform.position.z + tState.sx2;
         float tempy = transform.position.x + tState.sy2;
         float tempz = transform.position.y + tState.sz2;
+
+        float tempInt;
+        if (rotation.y < 0)
+        {
+            tempInt = Math.Abs(rotation.y);
+        }
+        else
+        {
+            tempInt = 180 + rotation.y;
+        }
+        //Debug.Log("degree: " + tempInt.ToString());
+        double a = (tempInt * Math.PI) / 180;
+        //Debug.Log("a = " + a.ToString());
+
+        //y' = y*cos(a) + x*sin(a)
+        //x' = x*cos(a) - y*sin(a) 
+        //double newY = tState.sy2 * Math.Cos(a) + tState.sx2 * Math.Sin(a);
+        //double newX = tState.sx2 * Math.Cos(a) - tState.sy2 * Math.Sin(a);
+        //clockwise
+        //y' = y*cos(a) - x*sin(a)
+        //x' = y*sin(a) + x*cos(a)
+        double newY = tState.sy2 * Math.Cos(a) + tState.sx2 * Math.Sin(a);
+        double newX = tState.sx2 * Math.Cos(a) - tState.sy2 * Math.Sin(a);
+        transform.position = new Vector3(transform.position.x - (float)newY, 0, transform.position.z - (float)newX);
+        //if (Math.Abs(rotation.y)>0) //< 25 || Math.Abs(rotation.y)> 65)
+        //{
+        //    float tempInt;
+        //    if (rotation.y < 0)
+        //    {
+        //        tempInt = 180 + Math.Abs(rotation.y);
+        //    }
+        //    else
+        //    {
+        //        tempInt = rotation.y;
+        //    }
+        //    double a = (tempInt * Math.PI) / 180;
+        //    double newY = tState.sy2 * Math.Cos(a) + tState.sx2 * Math.Sin(a);
+        //    double newX = tState.sx2 * Math.Cos(a) - tState.sy2 * Math.Sin(a);
+        //    //y' = y*cos(a) + x*sin(a)
+        //    //x' = x*cos(a) - y*sin(a) 
+        //    transform.position = new Vector3(transform.position.x + (float)newY, 0, transform.position.z + (float)newX);
+
+        //}
+        //else
+        //{
+        //    transform.position = new Vector3(tempy, 0, tempx);
+        //}
         //Vector3 waypointDir = wayPointTrans.position - transform.position;
         //Vector3 tempV = new Vector3(tempx, tempy, tempz);
         //Vector3 tempx = transform.forward * tState.sx * Time.deltaTime;
@@ -165,7 +212,6 @@ public class TelloController : MonoBehaviour
         //Vector3 tempz = transform.right * tState.sz * Time.deltaTime;
         //transform.Translate(this.transform.forward * tState.sx , Space.World);
         //transform.position += transform.forward * (tState.sx2) ;
-        transform.position = new Vector3(tempy, 0, tempx);
         //transform.position += this.transform.right * tState.sz;
         //transform.position = new Vector3(tempx, tempy, tempz);
         //transform.Translate(tState.sx, tState.sy, tState.sz, Space.World);
@@ -224,6 +270,8 @@ public class TelloController : MonoBehaviour
         yield return new WaitUntil(() => responseRec == commandSent);
         Debug.Log("TakeOff Finish");
         onCalculatePos = true;
+
+        Vector3 lastDist = this.transform.position;
         for (int i = 0; i < MPD.data.objects.Count(); i++)
         {
             rotateTo(MPD.data.objects[i]);
@@ -232,12 +280,12 @@ public class TelloController : MonoBehaviour
             //Debug.Log(responseRec.ToString() + ",command sent: " + commandSent.ToString());
             yield return new WaitUntil(() => responseRec == commandSent);
             Debug.Log("Rotate " + angleWhole.ToString()+" Finish");
-            forwardSet = ((int)Vector3.Distance(MPD.data.objects[i], this.transform.position)) * 10; 
+            forwardSet = ((int)Vector3.Distance(MPD.data.objects[i], lastDist)) * 10; 
             onForward = true;
             yield return new WaitForSeconds(1);
             yield return new WaitUntil(() => responseRec == commandSent);
             Debug.Log("Forward " + forwardSet.ToString() + " Finish");
-
+            lastDist = MPD.data.objects[i];
         }
         Debug.Log("Finish Navigating");
     }
