@@ -67,6 +67,8 @@ public class telloState : MonoBehaviour
         {
             try
             {
+                //DateTime firstTime = DateTime.Now;
+
                 receiveBytesState = udpState.Receive(ref RemoteIpEndPoint);
                 returnDataState = Encoding.ASCII.GetString(receiveBytesState);
                 char[] delimiter = { ';' };

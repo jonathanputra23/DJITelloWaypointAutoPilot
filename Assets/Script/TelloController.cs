@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using System;
+//using System.Threading;
 
 public class TelloController : MonoBehaviour
 {
@@ -12,7 +13,7 @@ public class TelloController : MonoBehaviour
     [HideInInspector]
     public telloState tState;
     private Vector3 rotation;
-    public int speedSet=10;
+    public int speedSet=35;
     public int forwardSet = 50;
     public bool onSpeed;
     public bool setSpeed;
@@ -29,11 +30,19 @@ public class TelloController : MonoBehaviour
     public bool onRotate;
     public int prevRot = 0;
     public bool onCalculatePos;
+    public bool onRcCon = false;
 
-
+    //Thread calculatePosThread;
     public int commandSent = 0;
     public int responseRec = -1; //termasuk send command pertama
 
+    public int a, b, c, d;
+    /*
+    a: left/right (-100~100)
+    b: forward/backward (-100~100)
+    c: up/down (-100~100)
+    d: yaw (-100~100)
+    */
     public bool onAuto=false;
     private bool right=false;
     private float localRotY;
@@ -55,8 +64,13 @@ public class TelloController : MonoBehaviour
 
     void Update()
     {
-        rotateTo(MPD.guide.transform.position);
+        //rotateTo(MPD.guide.transform.position);
         foreach (var message in connection.getMessages()) responseRec += 1;
+        if (onRcCon)
+        {
+            connection.Send("rc " + a.ToString() + " " + b.ToString() + " " + c.ToString() + " " + d.ToString());
+            onRcCon = false;
+        }
         if (onAuto)
         {
             StartCoroutine(startAuto());
@@ -141,6 +155,10 @@ public class TelloController : MonoBehaviour
         if (onCalculatePos)
         {
             movePosition();
+            //calculatePosThread = new Thread(() => movePosition());
+            //calculatePosThread.IsBackground = true;
+            //calculatePosThread.Start();
+            //onCalculatePos = false;
         }
         rotation = new Vector3(tState.roll, tState.yaw-localRotY, -tState.pitch);
         this.transform.eulerAngles = rotation;
@@ -155,33 +173,50 @@ public class TelloController : MonoBehaviour
     }
     void movePosition()
     {
+        double tempx2=0;
+        double tempy2=0;
         float tempx = transform.position.z + tState.sx2;
         float tempy = transform.position.x + tState.sy2;
         float tempz = transform.position.y + tState.sz2;
 
         float tempInt;
-        if (rotation.y < 0)
+        if ((tState.vgx == 0 || tState.vgy == 0))
         {
-            tempInt = Math.Abs(rotation.y);
+            if (rotation.y < 0)
+            {
+                //
+                tempInt = Math.Abs(rotation.y);
+            }
+            else
+            {
+                tempInt = 180 + rotation.y;
+            }
+            double a = (tempInt * Math.PI) / 180;
+            //Debug.Log("a = " + a.ToString());
+            //x didrone = z diunity = y di rumus matematika
+            //y didrone = x diunity = x di rumus matematika
+            //x' = x*cos(a) - y*sin(a) 
+            //y' = y*cos(a) + x*sin(a)
+            double newX = tState.sx2 * Math.Cos(a) + tState.sy2 * Math.Sin(a);
+            double newY = tState.sy2 * Math.Cos(a) - tState.sx2 * Math.Sin(a);
+            //clockwise
+            //x' = y*sin(a) + x*cos(a)
+            //y' = y*cos(a) - x*sin(a)
+
+            //double newX = tState.sx2 * Math.Cos(a) - tState.sy2 * Math.Sin(a); 
+            //double newY = tState.sx2 * Math.Cos(a) + tState.sy2 * Math.Sin(a);
+
+            //    tempx2 += newX;
+            //    tempy2 += newY;
+            //    transform.position = new Vector3(transform.position.x + (float)newY, 0, transform.position.z + (float)newX);
+            transform.position = new Vector3(transform.position.x + (float)newY, 0, transform.position.z + (float)newX);
         }
         else
         {
-            tempInt = 180 + rotation.y;
+            transform.position = new Vector3(tempy, 0, tempx);
         }
         //Debug.Log("degree: " + tempInt.ToString());
-        double a = (tempInt * Math.PI) / 180;
-        //Debug.Log("a = " + a.ToString());
 
-        //y' = y*cos(a) + x*sin(a)
-        //x' = x*cos(a) - y*sin(a) 
-        //double newY = tState.sy2 * Math.Cos(a) + tState.sx2 * Math.Sin(a);
-        //double newX = tState.sx2 * Math.Cos(a) - tState.sy2 * Math.Sin(a);
-        //clockwise
-        //y' = y*cos(a) - x*sin(a)
-        //x' = y*sin(a) + x*cos(a)
-        double newY = tState.sy2 * Math.Cos(a) - tState.sx2 * Math.Sin(a);
-        double newX = tState.sx2 * Math.Cos(a) + tState.sy2 * Math.Sin(a);
-        transform.position = new Vector3(transform.position.x - (float)newY, 0, transform.position.z - (float)newX);
         //if (Math.Abs(rotation.y)>0) //< 25 || Math.Abs(rotation.y)> 65)
         //{
         //    float tempInt;
@@ -213,7 +248,9 @@ public class TelloController : MonoBehaviour
         //transform.Translate(this.transform.forward * tState.sx , Space.World);
         //transform.position += transform.forward * (tState.sx2) ;
         //transform.position += this.transform.right * tState.sz;
-        //transform.position = new Vector3(tempx, tempy, tempz);
+
+        //transform.position = new Vector3(tempy, tempz, tempx);
+
         //transform.Translate(tState.sx, tState.sy, tState.sz, Space.World);
         //transform.position = transform.TransformDirection(tempV);
         //transform.position = transform.TransformPoint(tempV);
@@ -280,10 +317,24 @@ public class TelloController : MonoBehaviour
             //Debug.Log(responseRec.ToString() + ",command sent: " + commandSent.ToString());
             yield return new WaitUntil(() => responseRec == commandSent);
             Debug.Log("Rotate " + angleWhole.ToString()+" Finish");
-            forwardSet = ((int)Vector3.Distance(MPD.data.objects[i], lastDist)) * 10; 
-            onForward = true;
-            yield return new WaitForSeconds(1);
-            yield return new WaitUntil(() => responseRec == commandSent);
+            forwardSet = ((int)Vector3.Distance(MPD.data.objects[i], lastDist)) * 10;
+            if (forwardSet < 20)
+            {
+                b = forwardSet;
+                onRcCon = true;
+                yield return new WaitForSeconds(2);
+                b = 0;
+                onRcCon = true;
+                yield return new WaitForSeconds(1);
+
+            }
+            else
+            {
+                onForward = true;
+                yield return new WaitForSeconds(1);
+                yield return new WaitUntil(() => responseRec == commandSent);
+            }
+
             Debug.Log("Forward " + forwardSet.ToString() + " Finish");
             lastDist = MPD.data.objects[i];
         }
