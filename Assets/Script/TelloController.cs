@@ -58,7 +58,7 @@ public class TelloController : MonoBehaviour
         connection.StartConnection(sendIp, sendPort, receivePort);
         connection.Send("command");
         commandSent += 1;
-        StartCoroutine(instantiateRotation());
+        //StartCoroutine(instantiateRotation());
 
     }
 
@@ -160,7 +160,7 @@ public class TelloController : MonoBehaviour
             //calculatePosThread.Start();
             //onCalculatePos = false;
         }
-        rotation = new Vector3(tState.roll, tState.yaw-localRotY, -tState.pitch);
+        rotation = new Vector3(tState.roll, tState.yaw, -tState.pitch);
         this.transform.eulerAngles = rotation;
     }
 
@@ -173,89 +173,50 @@ public class TelloController : MonoBehaviour
     }
     void movePosition()
     {
-        double tempx2=0;
-        double tempy2=0;
+        //double tempx2=0;
+        //double tempy2=0;
         float tempx = transform.position.z + tState.sx2;
         float tempy = transform.position.x + tState.sy2;
         float tempz = transform.position.y + tState.sz2;
 
         float tempInt;
-        if ((tState.vgx == 0 || tState.vgy == 0))
+        double newX, newY;
+        //x didrone = z diunity = y di rumus matematika
+        //y didrone = x diunity = x di rumus matematika
+        if ((tState.vgx == 0) || (tState.vgy == 0)) //kalo data dari drone hanya mengembalikan satu data
         {
             if (rotation.y < 0)
             {
                 //
-                tempInt = Math.Abs(rotation.y);
+                //tempInt = Math.Abs(rotation.y);
+                tempInt = 181 + 180 + rotation.y;
             }
             else
             {
-                tempInt = 180 + rotation.y;
+                //tempInt = 180 + rotation.y;
+                tempInt = rotation.y;
             }
             double a = (tempInt * Math.PI) / 180;
-            //Debug.Log("a = " + a.ToString());
-            //x didrone = z diunity = y di rumus matematika
-            //y didrone = x diunity = x di rumus matematika
+            //ccw
             //x' = x*cos(a) - y*sin(a) 
             //y' = y*cos(a) + x*sin(a)
-            double newX = tState.sx2 * Math.Cos(a) + tState.sy2 * Math.Sin(a);
-            double newY = tState.sy2 * Math.Cos(a) - tState.sx2 * Math.Sin(a);
-            //clockwise
-            //x' = y*sin(a) + x*cos(a)
-            //y' = y*cos(a) - x*sin(a)
+            newX = Math.Abs(tState.sy2) * Math.Cos(a) - Math.Abs(tState.sx2) * Math.Sin(a);
+            newY = Math.Abs(tState.sx2) * Math.Cos(a) + Math.Abs(tState.sy2) * Math.Sin(a);
 
-            //double newX = tState.sx2 * Math.Cos(a) - tState.sy2 * Math.Sin(a); 
-            //double newY = tState.sx2 * Math.Cos(a) + tState.sy2 * Math.Sin(a);
+            if (tState.vgy == 0)//normal
+            {
+                transform.position = new Vector3(transform.position.x - (float)newX, 0, transform.position.z + (float)newY);
+            }
+            else//kalo data yang didapet cuma y, y diubah menjadi x dan x diubah menjadi y
+            {
+                transform.position = new Vector3(transform.position.x + (float)newY, 0, transform.position.z + (float)newX);
 
-            //    tempx2 += newX;
-            //    tempy2 += newY;
-            //    transform.position = new Vector3(transform.position.x + (float)newY, 0, transform.position.z + (float)newX);
-            transform.position = new Vector3(transform.position.x + (float)newY, 0, transform.position.z + (float)newX);
+            }  
         }
         else
         {
             transform.position = new Vector3(tempy, 0, tempx);
         }
-        //Debug.Log("degree: " + tempInt.ToString());
-
-        //if (Math.Abs(rotation.y)>0) //< 25 || Math.Abs(rotation.y)> 65)
-        //{
-        //    float tempInt;
-        //    if (rotation.y < 0)
-        //    {
-        //        tempInt = 180 + Math.Abs(rotation.y);
-        //    }
-        //    else
-        //    {
-        //        tempInt = rotation.y;
-        //    }
-        //    double a = (tempInt * Math.PI) / 180;
-        //    double newY = tState.sy2 * Math.Cos(a) + tState.sx2 * Math.Sin(a);
-        //    double newX = tState.sx2 * Math.Cos(a) - tState.sy2 * Math.Sin(a);
-        //    //y' = y*cos(a) + x*sin(a)
-        //    //x' = x*cos(a) - y*sin(a) 
-        //    transform.position = new Vector3(transform.position.x + (float)newY, 0, transform.position.z + (float)newX);
-
-        //}
-        //else
-        //{
-        //    transform.position = new Vector3(tempy, 0, tempx);
-        //}
-        //Vector3 waypointDir = wayPointTrans.position - transform.position;
-        //Vector3 tempV = new Vector3(tempx, tempy, tempz);
-        //Vector3 tempx = transform.forward * tState.sx * Time.deltaTime;
-        //Vector3 tempy = transform.up * tState.sy * Time.deltaTime;
-        //Vector3 tempz = transform.right * tState.sz * Time.deltaTime;
-        //transform.Translate(this.transform.forward * tState.sx , Space.World);
-        //transform.position += transform.forward * (tState.sx2) ;
-        //transform.position += this.transform.right * tState.sz;
-
-        //transform.position = new Vector3(tempy, tempz, tempx);
-
-        //transform.Translate(tState.sx, tState.sy, tState.sz, Space.World);
-        //transform.position = transform.TransformDirection(tempV);
-        //transform.position = transform.TransformPoint(tempV);
-
-
     }
     void OnDestroy()
     {
@@ -320,12 +281,15 @@ public class TelloController : MonoBehaviour
             forwardSet = ((int)Vector3.Distance(MPD.data.objects[i], lastDist)) * 10;
             if (forwardSet < 20)
             {
-                b = forwardSet;
+                b = 15;
                 onRcCon = true;
-                yield return new WaitForSeconds(2);
+                yield return new WaitForSeconds(3);
+                Debug.Log("RC Con " + b.ToString() + " Start");
+
                 b = 0;
                 onRcCon = true;
                 yield return new WaitForSeconds(1);
+                Debug.Log("RC Con " + b.ToString() + " Finish");
 
             }
             else
@@ -333,9 +297,10 @@ public class TelloController : MonoBehaviour
                 onForward = true;
                 yield return new WaitForSeconds(1);
                 yield return new WaitUntil(() => responseRec == commandSent);
+                Debug.Log("Forward " + forwardSet.ToString() + " Finish");
+
             }
 
-            Debug.Log("Forward " + forwardSet.ToString() + " Finish");
             lastDist = MPD.data.objects[i];
         }
         Debug.Log("Finish Navigating");
